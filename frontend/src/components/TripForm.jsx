@@ -3,8 +3,8 @@ import LocationField from "./LocationField.jsx";
 const SAMPLES = [
   {
     id: "short",
-    label: "Chicago → Rockford",
-    hint: "Same-day run",
+    label: "CHI → RFD",
+    hint: "Same day",
     current_location: "Chicago, IL",
     pickup_location: "Chicago, IL",
     dropoff_location: "Rockford, IL",
@@ -12,8 +12,8 @@ const SAMPLES = [
   },
   {
     id: "long",
-    label: "Chicago → Los Angeles",
-    hint: "Multi-day + fuel + rest",
+    label: "CHI → LAX",
+    hint: "Multi-day",
     current_location: "Chicago, IL",
     pickup_location: "Chicago, IL",
     dropoff_location: "Los Angeles, CA",
@@ -21,8 +21,8 @@ const SAMPLES = [
   },
   {
     id: "restart",
-    label: "Dallas → Atlanta",
-    hint: "Near 70-hr limit",
+    label: "DFW → ATL",
+    hint: "Near 70",
     current_location: "Dallas, TX",
     pickup_location: "Dallas, TX",
     dropoff_location: "Atlanta, GA",
@@ -73,36 +73,38 @@ export default function TripForm({ value, onChange, onSubmit, loading, error }) 
           value={value.current_cycle_used}
           onChange={(e) => set("current_cycle_used", Number(e.target.value))}
         />
-        <span className="cycle-meta">70-hour / 8-day property-carrying cycle</span>
+        <span className="cycle-meta">Hours already used in the 70-hr / 8-day week</span>
       </label>
 
-      <button type="submit" className="primary" disabled={loading}>
-        {loading ? "Plotting duty status…" : "Plan trip & draw logs"}
-      </button>
+      <div className="samples">
+        <p>Quick routes</p>
+        <div className="sample-row">
+          {SAMPLES.map((sample) => (
+            <button
+              type="button"
+              key={sample.id}
+              className="sample"
+              onClick={() =>
+                onChange({
+                  current_location: sample.current_location,
+                  pickup_location: sample.pickup_location,
+                  dropoff_location: sample.dropoff_location,
+                  current_cycle_used: sample.current_cycle_used,
+                })
+              }
+            >
+              <span>{sample.label}</span>
+              <small>{sample.hint}</small>
+            </button>
+          ))}
+        </div>
+      </div>
 
       {error ? <p className="form-error">{error}</p> : null}
 
-      <div className="samples">
-        <p>Try a route</p>
-        {SAMPLES.map((sample) => (
-          <button
-            type="button"
-            key={sample.id}
-            className="sample"
-            onClick={() =>
-              onChange({
-                current_location: sample.current_location,
-                pickup_location: sample.pickup_location,
-                dropoff_location: sample.dropoff_location,
-                current_cycle_used: sample.current_cycle_used,
-              })
-            }
-          >
-            <span>{sample.label}</span>
-            <small>{sample.hint}</small>
-          </button>
-        ))}
-      </div>
+      <button type="submit" className="primary" disabled={loading}>
+        {loading ? "Planning…" : "Plan trip"}
+      </button>
     </form>
   );
 }
