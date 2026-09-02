@@ -106,11 +106,8 @@ export default function LocationField({
         onKeyDown={onKeyDown}
       />
       {showList ? (
-        <ul
-          id={listId}
-          role="listbox"
-          className={`suggestions ${dropUp ? "drop-up" : ""}`}
-        >
+        <div className={`suggestions-shell ${dropUp ? "drop-up" : ""}`}>
+          <ul id={listId} role="listbox" className="suggestions">
           {loading && items.length === 0 ? (
             <li className="suggestion muted">Searching…</li>
           ) : (
@@ -131,6 +128,7 @@ export default function LocationField({
             ))
           )}
         </ul>
+        </div>
       ) : null}
     </label>
   );

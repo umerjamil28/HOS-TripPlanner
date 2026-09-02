@@ -221,26 +221,37 @@ input {
   z-index: 6;
 }
 
-.suggestions {
+.suggestions-shell {
   position: absolute;
   z-index: 8;
   left: 0;
   right: 0;
   top: calc(100% + 4px);
-  margin: 0;
-  padding: 4px;
-  list-style: none;
+  display: flex;
+  flex-direction: column;
+  max-height: 140px;
+  padding: 8px 2px 8px 4px;
+  overflow: hidden;
   background: var(--menu-bg);
   border: 1px solid var(--spotter-border);
   border-radius: 8px;
   box-shadow: var(--shadow);
-  max-height: 140px;
-  overflow-y: auto;
 }
 
-.suggestions.drop-up {
+.suggestions-shell.drop-up {
   top: auto;
   bottom: calc(100% - 2px);
+}
+
+.suggestions {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  min-height: 0;
+  overflow-y: auto;
+  background: transparent;
+  scrollbar-width: thin;
+  scrollbar-color: #d4d4d4 transparent;
 }
 
 .suggestions li {
@@ -1085,26 +1096,31 @@ input[type="range"] {
 }
 
 @supports selector(::-webkit-scrollbar) {
-  .log-remarks ul {
+  .log-remarks ul,
+  .suggestions {
     scrollbar-width: initial;
     scrollbar-color: initial;
   }
 }
 
-.log-remarks ul::-webkit-scrollbar {
+.log-remarks ul::-webkit-scrollbar,
+.suggestions::-webkit-scrollbar {
   width: 6px;
 }
 
-.log-remarks ul::-webkit-scrollbar-track {
+.log-remarks ul::-webkit-scrollbar-track,
+.suggestions::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.log-remarks ul::-webkit-scrollbar-thumb {
+.log-remarks ul::-webkit-scrollbar-thumb,
+.suggestions::-webkit-scrollbar-thumb {
   background: #d4d4d4;
   border-radius: 999px;
 }
 
-.log-remarks ul::-webkit-scrollbar-thumb:hover {
+.log-remarks ul::-webkit-scrollbar-thumb:hover,
+.suggestions::-webkit-scrollbar-thumb:hover {
   background: #bdbdbd;
 }
 
@@ -1113,14 +1129,21 @@ input[type="range"] {
 .log-remarks ul::-webkit-scrollbar-button:end:increment,
 .log-remarks ul::-webkit-scrollbar-button:vertical:start:increment,
 .log-remarks ul::-webkit-scrollbar-button:vertical:end:decrement,
-.log-remarks ul::-webkit-scrollbar-button:single-button {
+.log-remarks ul::-webkit-scrollbar-button:single-button,
+.suggestions::-webkit-scrollbar-button,
+.suggestions::-webkit-scrollbar-button:start:decrement,
+.suggestions::-webkit-scrollbar-button:end:increment,
+.suggestions::-webkit-scrollbar-button:vertical:start:increment,
+.suggestions::-webkit-scrollbar-button:vertical:end:decrement,
+.suggestions::-webkit-scrollbar-button:single-button {
   display: none;
   width: 0;
   height: 0;
   background: transparent;
 }
 
-.log-remarks ul::-webkit-scrollbar-corner {
+.log-remarks ul::-webkit-scrollbar-corner,
+.suggestions::-webkit-scrollbar-corner {
   background: transparent;
 }
 
