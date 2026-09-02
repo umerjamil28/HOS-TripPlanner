@@ -3,6 +3,7 @@ import { planTrip } from "./api.js";
 import TripForm from "./components/TripForm.jsx";
 import RouteMap from "./components/RouteMap.jsx";
 import StopTimeline from "./components/StopTimeline.jsx";
+import TripDetails from "./components/TripDetails.jsx";
 import LogBook from "./components/LogBook.jsx";
 import { IconMoon, IconSun, IconTruck, TAB_ICONS } from "./components/Icons.jsx";
 
@@ -185,9 +186,7 @@ export default function App() {
                   />
                 </section>
                 <section className={`tab-panel tab-scroll ${tab === "details" ? "active" : ""}`}>
-                  <div className="details-panel">
-                    <StopTimeline stops={result.stops} />
-                  </div>
+                  <TripDetails result={result} />
                 </section>
               </>
             )}

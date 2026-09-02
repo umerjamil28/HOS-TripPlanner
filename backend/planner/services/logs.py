@@ -6,6 +6,13 @@ from datetime import datetime, timedelta
 from planner.constants import CYCLE_LIMIT_HOURS, DRIVING, OFF_DUTY, ON_DUTY, SLEEPER
 from planner.services.hos import HosResult, Segment
 
+STATUS_TITLE = {
+    OFF_DUTY: "Off duty",
+    SLEEPER: "Sleeper berth",
+    DRIVING: "Driving",
+    ON_DUTY: "On duty",
+}
+
 
 def _hhmm(dt: datetime) -> str:
     return dt.strftime("%H:%M")
@@ -13,6 +20,79 @@ def _hhmm(dt: datetime) -> str:
 
 def _hours_between(start: datetime, end: datetime) -> float:
     return (end - start).total_seconds() / 3600.0
+
+
+def _explain_remark(seg: Segment) -> dict:
+    loc = seg.location or "En route"
+    remark = (seg.remark or "").lower()
+    key = None
+    if "pickup" in remark:
+        key = "pickup"
+        title = "Pickup — loading"
+        why = (
+            f"1 hour on duty at {loc}, not driving. Loading uses the 14-hour window "
+            "and the 70-hour week."
+        )
+    elif "dropoff" in remark:
+        key = "dropoff"
+        title = "Dropoff — unloading"
+        why = f"1 hour on duty at {loc}, not driving, to unload at the receiver."
+    elif "fuel" in remark:
+        key = "fuel"
+        title = "Fuel stop"
+        why = (
+            f"30 minutes on duty at {loc}. Fuel is planned at least once every 1,000 miles."
+        )
+    elif "30-minute" in remark or "rest break" in remark:
+        key = "break"
+        title = "30-minute break"
+        why = (
+            "Required after 8 hours of driving. Logged off duty, so it does not burn "
+            "the 70-hour weekly clock."
+        )
+    elif "sleeper" in remark or seg.status == SLEEPER:
+        key = "rest"
+        title = "10-hour sleeper rest"
+        why = (
+            f"Sleeper berth at {loc}. This resets the 11-hour driving limit and the "
+            "14-hour window."
+        )
+    elif "34-hour" in remark or "restart" in remark:
+        key = "restart"
+        title = "34-hour restart"
+        why = (
+            "Off duty long enough to reset the 70-hour / 8-day cycle so the driver "
+            "can take more on-duty hours."
+        )
+    elif seg.status == DRIVING:
+        key = "driving"
+        dest = seg.remark.replace("Driving to ", "") if seg.remark.startswith("Driving to ") else loc
+        title = "Driving"
+        why = f"Moving toward {dest}. This time counts against the 11-hour driving limit."
+    elif seg.status == OFF_DUTY and seg.start.hour == 0 and seg.start.minute == 0:
+        key = "overnight"
+        title = "Off duty overnight"
+        why = (
+            f"The log day starts at midnight. This trip is planned to begin at 6:00 AM "
+            f"from {loc}."
+        )
+    elif seg.status == OFF_DUTY:
+        key = "off"
+        title = "Off duty"
+        why = f"Released from work at {loc}. The rest of this log day is off duty."
+    else:
+        key = seg.status
+        title = STATUS_TITLE.get(seg.status, seg.status)
+        why = seg.remark or title
+
+    return {
+        "time": _hhmm(seg.start),
+        "location": loc,
+        "status": seg.status,
+        "title": title,
+        "text": why,
+        "key": key,
+    }
 
 
 def _split_midnight(segment: Segment) -> list[Segment]:
@@ -97,14 +177,9 @@ def build_daily_logs(result: HosResult) -> list[dict]:
             hours = _hours_between(seg.start, seg.end)
             totals[seg.status] = totals.get(seg.status, 0.0) + hours
             miles += seg.miles
-            if not remarks or remarks[-1]["text"] != f"{seg.location} — {seg.remark}":
-                remarks.append(
-                    {
-                        "time": _hhmm(seg.start),
-                        "location": seg.location,
-                        "text": f"{seg.location} — {seg.remark}",
-                    }
-                )
+            explained = _explain_remark(seg)
+            if not remarks or remarks[-1]["key"] != explained["key"]:
+                remarks.append(explained)
             if seg.location and (not locations or locations[-1] != seg.location):
                 locations.append(seg.location)
 

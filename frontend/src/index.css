@@ -484,8 +484,146 @@ input[type="range"] {
 
 .details-panel,
 .logbook {
-  padding: 16px;
+  padding: 20px 22px 24px;
   width: 100%;
+}
+
+.details-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 16px 24px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.details-head h2 {
+  margin: 0;
+  font-size: 1.45rem;
+  font-weight: 600;
+}
+
+.details-route {
+  margin: 6px 0 0;
+  color: var(--spotter-muted);
+  font-size: 0.9rem;
+}
+
+.details-facts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(72px, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.details-facts li {
+  padding: 10px 12px;
+  background: var(--input-bg);
+  border: 1px solid var(--spotter-border);
+  border-radius: 10px;
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.details-facts span {
+  color: var(--spotter-muted);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.details-facts strong {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.95rem;
+}
+
+.itinerary-day {
+  margin-top: 18px;
+}
+
+.itinerary-day:first-of-type {
+  margin-top: 4px;
+}
+
+.itinerary-day h3 {
+  margin: 0 0 8px;
+  font-size: 0.92rem;
+  font-weight: 650;
+}
+
+.itinerary-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--spotter-border);
+  border-radius: 12px;
+  background: var(--input-bg);
+}
+
+.itinerary-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+}
+
+.itinerary-table th,
+.itinerary-table td {
+  padding: 10px 12px;
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.itinerary-table th {
+  color: var(--spotter-muted);
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+  border-bottom: 1px solid var(--spotter-border);
+}
+
+.itinerary-table td {
+  border-top: 1px solid var(--spotter-border);
+}
+
+.itinerary-table td:nth-child(3),
+.itinerary-table td:nth-child(4) {
+  white-space: normal;
+}
+
+.itinerary-table tbody tr:first-child td {
+  border-top: 0;
+}
+
+.itinerary-table tbody tr:nth-child(even) {
+  background: color-mix(in srgb, var(--spotter-card) 70%, transparent);
+}
+
+.itinerary-time,
+.itinerary-mile {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.8rem;
+}
+
+.itinerary-mile {
+  color: var(--spotter-lime);
+  font-weight: 600;
+}
+
+.itinerary-kind {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 650;
+}
+
+.itinerary-kind i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: block;
 }
 
 .panel-head {
@@ -729,26 +867,35 @@ input[type="range"] {
 
 .logbook-head {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  align-items: end;
-  margin-bottom: 14px;
+  gap: 16px 24px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+
+.logbook-head h2 {
+  margin: 0;
 }
 
 .day-tabs {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
 }
 
 .day-tabs button {
   display: grid;
-  padding: 7px 10px;
+  gap: 3px;
+  padding: 10px 14px;
   border: 1px solid var(--spotter-border);
   background: transparent;
   color: var(--spotter-text);
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: 10px;
+  min-width: 108px;
 }
 
 .day-tabs button.active {
@@ -763,47 +910,281 @@ input[type="range"] {
 }
 
 .log-sheet {
-  border: 1px solid #d7ccb4;
-  background: #f7f1e3;
-  overflow: auto;
-  border-radius: 8px;
+  display: grid;
+  gap: 10px;
 }
 
-.log-title {
-  font-family: "DM Sans", sans-serif;
-  font-size: 28px;
-  font-weight: 700;
-  fill: #1c1914;
+.log-meta {
+  display: grid;
+  gap: 14px;
 }
 
-.log-label,
-.log-row {
-  font-family: "DM Sans", sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  fill: #1c1914;
+.log-meta h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 650;
 }
 
-.log-fine,
+.log-route {
+  margin: 6px 0 0;
+  color: var(--spotter-muted);
+  font-size: 0.9rem;
+}
+
+.log-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.log-kpis li {
+  padding: 10px 12px;
+  background: var(--input-bg);
+  border: 1px solid var(--spotter-border);
+  border-radius: 12px;
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.log-kpis span {
+  color: var(--spotter-muted);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.log-kpis strong {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 1.02rem;
+}
+
+.log-graph {
+  padding: 16px 12px 8px;
+  background: var(--input-bg);
+  border: 1px solid var(--spotter-border);
+  border-radius: 12px;
+}
+
+.log-graph svg {
+  display: block;
+}
+
+.log-grid-bg {
+  fill: color-mix(in srgb, var(--spotter-card) 80%, transparent);
+}
+
+.log-grid-line {
+  stroke: var(--spotter-border);
+  stroke-width: 0.8;
+}
+
+.log-grid-strong {
+  stroke: color-mix(in srgb, var(--spotter-lime) 35%, var(--spotter-border));
+  stroke-width: 1.2;
+}
+
+.log-grid-minor {
+  stroke: var(--spotter-border);
+  stroke-width: 0.35;
+  opacity: 0.55;
+}
+
+.log-row,
+.log-total,
 .log-hour,
-.log-remark {
+.log-hour-cap {
   font-family: "DM Sans", sans-serif;
   font-size: 11px;
-  fill: #5c5346;
+  font-weight: 650;
 }
 
-.log-write {
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 14px;
-  fill: #1c1914;
-}
-
-.log-write.lg {
-  font-size: 20px;
+.log-total,
+.log-hour,
+.log-hour-cap {
+  fill: var(--spotter-muted);
 }
 
 .log-hour {
   font-size: 9px;
+  font-weight: 600;
+}
+
+.log-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin: 0;
+  padding: 0 12px 4px;
+  list-style: none;
+  color: var(--spotter-muted);
+  font-size: 0.78rem;
+}
+
+.log-legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.log-legend i {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  display: block;
+}
+
+.log-bottom {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 16px;
+}
+
+.log-remarks,
+.log-recap {
+  padding: 12px 14px;
+  background: var(--input-bg);
+  border: 1px solid var(--spotter-border);
+  border-radius: 12px;
+}
+
+.log-remarks ul {
+  margin: 8px 0 0;
+  padding: 0 4px 0 0;
+  list-style: none;
+  display: grid;
+  gap: 10px;
+  max-height: 280px;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #d4d4d4 transparent;
+}
+
+@supports selector(::-webkit-scrollbar) {
+  .log-remarks ul {
+    scrollbar-width: initial;
+    scrollbar-color: initial;
+  }
+}
+
+.log-remarks ul::-webkit-scrollbar {
+  width: 6px;
+}
+
+.log-remarks ul::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.log-remarks ul::-webkit-scrollbar-thumb {
+  background: #d4d4d4;
+  border-radius: 999px;
+}
+
+.log-remarks ul::-webkit-scrollbar-thumb:hover {
+  background: #bdbdbd;
+}
+
+.log-remarks ul::-webkit-scrollbar-button,
+.log-remarks ul::-webkit-scrollbar-button:start:decrement,
+.log-remarks ul::-webkit-scrollbar-button:end:increment,
+.log-remarks ul::-webkit-scrollbar-button:vertical:start:increment,
+.log-remarks ul::-webkit-scrollbar-button:vertical:end:decrement,
+.log-remarks ul::-webkit-scrollbar-button:single-button {
+  display: none;
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+
+.log-remarks ul::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.log-remarks li {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 10px;
+  padding-left: 10px;
+  border-left: 3px solid var(--spotter-border);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.log-remarks li.status-driving {
+  border-left-color: rgb(32, 178, 170);
+}
+
+.log-remarks li.status-sleeper {
+  border-left-color: #7b61ff;
+}
+
+.log-remarks li.status-on_duty {
+  border-left-color: #f0a202;
+}
+
+.log-remarks li.status-off_duty {
+  border-left-color: #8b8b8b;
+}
+
+.log-remarks time {
+  color: var(--spotter-lime);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.76rem;
+  padding-top: 1px;
+}
+
+.log-remarks strong {
+  display: block;
+  font-size: 0.84rem;
+}
+
+.log-remarks p {
+  margin: 3px 0 0;
+  color: var(--spotter-muted);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.log-recap-note {
+  margin: 6px 0 10px;
+  color: var(--spotter-muted);
+  font-size: 0.8rem;
+}
+
+.log-recap dl {
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.log-recap div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.log-recap dt {
+  color: var(--spotter-muted);
+  font-size: 0.8rem;
+}
+
+.log-recap dd {
+  margin: 0;
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 650;
+}
+
+.log-recap-fine {
+  margin: 12px 0 0;
+  color: var(--stop-note);
+  font-size: 0.74rem;
+  line-height: 1.4;
 }
 
 .leaflet-popup-content-wrapper {
@@ -854,10 +1235,26 @@ input[type="range"] {
     min-height: 240px;
   }
 
+  .details-head,
   .panel-head,
   .logbook-head,
+  .log-meta,
   .trip-summary {
     flex-direction: column;
     align-items: start;
+  }
+
+  .details-facts {
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+  }
+
+  .log-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .log-bottom {
+    grid-template-columns: 1fr;
   }
 }
