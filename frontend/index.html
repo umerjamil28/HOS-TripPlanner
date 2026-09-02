@@ -10,9 +10,8 @@
     <script>
       try {
         var theme = localStorage.getItem("spotter-theme");
-        if (theme === "day" || theme === "night") {
-          document.documentElement.dataset.theme = theme;
-        }
+        if (theme !== "day" && theme !== "night") theme = "day";
+        document.documentElement.dataset.theme = theme;
       } catch (e) {}
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />

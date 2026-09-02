@@ -16,7 +16,7 @@ function readTheme() {
   } catch {
     /* ignore */
   }
-  return "night";
+  return "day";
 }
 
 const EMPTY_FORM = {
