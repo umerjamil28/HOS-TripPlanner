@@ -301,7 +301,6 @@ input[type="range"] {
 }
 
 .primary {
-  margin-top: auto;
   padding: 12px 14px;
   border: 0;
   border-radius: 8px;
@@ -323,6 +322,25 @@ input[type="range"] {
   color: var(--error-text);
   font-size: 0.8rem;
   border-radius: 6px;
+}
+
+.rail-assumptions {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--spotter-border);
+}
+
+.rail-assumptions .eyebrow {
+  margin-bottom: 8px;
+}
+
+.rail-assumptions p {
+  margin: 0;
+  color: var(--spotter-muted);
+  font-size: 0.64rem;
+  line-height: 1.4;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .samples {

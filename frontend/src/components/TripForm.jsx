@@ -102,6 +102,16 @@ export default function TripForm({ value, onChange, onSubmit, loading, error }) 
 
       {error ? <p className="form-error">{error}</p> : null}
 
+      <aside className="rail-assumptions">
+        <p className="eyebrow">Assumptions</p>
+        <p>
+          Days start 6:00 AM. Logs use 15-minute increments. Pickup and dropoff
+          are 1 hour on-duty. Fuel every 1,000 miles. 11-hour drive inside a
+          14-hour window. 30-minute break after 8 hours driving. 10-hour sleeper.
+          34-hour restart on the 70-hour / 8-day cycle.
+        </p>
+      </aside>
+
       <button type="submit" className="primary" disabled={loading}>
         {loading ? "Planning…" : "Plan trip"}
       </button>
