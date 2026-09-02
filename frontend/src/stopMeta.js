@@ -48,6 +48,29 @@ export function stopNote(stop) {
   return meta?.note || stop.description || "";
 }
 
+function formatStayHours(hours) {
+  const value = Number(hours);
+  if (value === 0.5) return "30 min";
+  if (value === 1) return "1 hr";
+  return `${value} hr`;
+}
+
+const STAY_ACTION = {
+  pickup: "loading",
+  dropoff: "unloading",
+  fuel: "fueling",
+  break: "off duty",
+  rest: "in sleeper",
+  restart: "off duty (cycle reset)",
+};
+
+export function stopStayLabel(stop) {
+  if (!stop?.duration_hours) return "";
+  const time = formatStayHours(stop.duration_hours);
+  const action = STAY_ACTION[stop.kind];
+  return action ? `${time} ${action}` : `${time} at this stop`;
+}
+
 export function markerHtml(kind) {
   const meta = STOP_META[kind] || STOP_META.current;
   const ink = meta.ink || "#fff";

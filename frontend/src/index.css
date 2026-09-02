@@ -810,6 +810,18 @@ input[type="range"] {
   border-radius: 8px;
 }
 
+.map-popup {
+  min-width: 160px;
+}
+
+.map-popup p {
+  margin: 4px 0 0;
+}
+
+.map-popup p:last-child {
+  color: #5c5c5c;
+}
+
 @media (max-width: 980px) {
   .app {
     grid-template-rows: auto auto;

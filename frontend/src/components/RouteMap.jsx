@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { MapContainer, Marker, Polyline, Popup, TileLayer, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { STOP_META, markerHtml } from "../stopMeta.js";
+import { STOP_META, markerHtml, stopStayLabel } from "../stopMeta.js";
 
 function markerIcon(kind) {
   return L.divIcon({
@@ -60,13 +60,18 @@ export default function RouteMap({ geometry, stops, active }) {
             icon={markerIcon(stop.kind)}
           >
             <Popup>
-              <strong>{STOP_META[stop.kind]?.label || stop.kind}</strong>
-              <br />
-              {stop.location}
-              <br />
-              {stop.time.replace("T", " ")}
-              {stop.miles != null ? ` · Mile ${Number(stop.miles).toFixed(1).replace(/\.0$/, "")}` : ""}
-              {stop.duration_hours ? ` · ${stop.duration_hours} hr` : ""}
+              <div className="map-popup">
+                <strong>{STOP_META[stop.kind]?.label || stop.kind}</strong>
+                <p>{stop.location}</p>
+                <p>{stop.time.replace("T", " ")}</p>
+                <p>
+                  {stop.miles != null
+                    ? `Mile ${Number(stop.miles).toFixed(1).replace(/\.0$/, "")}`
+                    : null}
+                  {stop.miles != null && stop.duration_hours ? " · " : null}
+                  {stopStayLabel(stop)}
+                </p>
+              </div>
             </Popup>
           </Marker>
         ))}
