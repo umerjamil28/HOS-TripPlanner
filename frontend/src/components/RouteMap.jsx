@@ -7,9 +7,9 @@ import { STOP_META, markerHtml } from "../stopMeta.js";
 function markerIcon(kind) {
   return L.divIcon({
     className: "stop-marker",
-    iconSize: [24, 32],
-    iconAnchor: [12, 31],
-    popupAnchor: [0, -28],
+    iconSize: [34, 44],
+    iconAnchor: [17, 42],
+    popupAnchor: [0, -36],
     html: markerHtml(kind),
   });
 }
@@ -65,6 +65,7 @@ export default function RouteMap({ geometry, stops, active }) {
               {stop.location}
               <br />
               {stop.time.replace("T", " ")}
+              {stop.miles != null ? ` · Mile ${Number(stop.miles).toFixed(1).replace(/\.0$/, "")}` : ""}
               {stop.duration_hours ? ` · ${stop.duration_hours} hr` : ""}
             </Popup>
           </Marker>

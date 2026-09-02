@@ -1,9 +1,22 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { planTrip } from "./api.js";
 import TripForm from "./components/TripForm.jsx";
 import RouteMap from "./components/RouteMap.jsx";
 import StopTimeline from "./components/StopTimeline.jsx";
 import LogBook from "./components/LogBook.jsx";
+import { IconMoon, IconSun, IconTruck, TAB_ICONS } from "./components/Icons.jsx";
+
+const THEME_KEY = "spotter-theme";
+
+function readTheme() {
+  try {
+    const saved = localStorage.getItem(THEME_KEY);
+    if (saved === "day" || saved === "night") return saved;
+  } catch {
+    /* ignore */
+  }
+  return "night";
+}
 
 const EMPTY_FORM = {
   current_location: "Chicago, IL",
@@ -24,6 +37,16 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [tab, setTab] = useState("map");
+  const [theme, setTheme] = useState(readTheme);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    try {
+      localStorage.setItem(THEME_KEY, theme);
+    } catch {
+      /* ignore */
+    }
+  }, [theme]);
 
   const summary = result?.summary;
 
@@ -60,13 +83,26 @@ export default function App() {
     <div className="app">
       <header className="topbar">
         <div className="brand">
-          <span className="mark">S</span>
+          <span className="mark" aria-hidden="true">
+            <IconTruck size={18} />
+          </span>
           <div>
             <p className="product">Spotter</p>
             <h1>HOS trip planner</h1>
           </div>
         </div>
-        <p className="topbar-note">Property-carrying · 70 hr / 8 day</p>
+        <div className="topbar-actions">
+          <p className="topbar-note">Property-carrying · 70 hr / 8 day</p>
+          <button
+            type="button"
+            className="theme-toggle"
+            aria-label={theme === "night" ? "Switch to day mode" : "Switch to night mode"}
+            title={theme === "night" ? "Day mode" : "Night mode"}
+            onClick={() => setTheme(theme === "night" ? "day" : "night")}
+          >
+            {theme === "night" ? <IconSun size={18} /> : <IconMoon size={18} />}
+          </button>
+        </div>
       </header>
 
       <div className="workspace">
@@ -101,19 +137,23 @@ export default function App() {
           ) : null}
 
           <div className="stage-tabs" role="tablist">
-            {TABS.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                role="tab"
-                aria-selected={tab === item.id}
-                className={tab === item.id ? "active" : ""}
-                onClick={() => setTab(item.id)}
-                disabled={!result && item.id !== "map"}
-              >
-                {item.label}
-              </button>
-            ))}
+            {TABS.map((item) => {
+              const TabIcon = TAB_ICONS[item.id];
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={tab === item.id}
+                  className={tab === item.id ? "active" : ""}
+                  onClick={() => setTab(item.id)}
+                  disabled={!result && item.id !== "map"}
+                >
+                  {TabIcon ? <TabIcon size={15} /> : null}
+                  {item.label}
+                </button>
+              );
+            })}
           </div>
 
           <div className="stage-body">
@@ -128,12 +168,13 @@ export default function App() {
               </div>
             ) : (
               <>
-                <section className={`tab-panel ${tab === "map" ? "active" : ""}`}>
+                <section className={`tab-panel map-panel ${tab === "map" ? "active" : ""}`}>
                   <RouteMap
                     geometry={result.route.geometry}
                     stops={result.stops}
                     active={tab === "map"}
                   />
+                  <StopTimeline stops={result.stops} />
                 </section>
                 <section className={`tab-panel tab-scroll ${tab === "logs" ? "active" : ""}`}>
                   <LogBook
@@ -145,7 +186,6 @@ export default function App() {
                 </section>
                 <section className={`tab-panel tab-scroll ${tab === "details" ? "active" : ""}`}>
                   <div className="details-panel">
-                    <p className="eyebrow">Stops & rest</p>
                     <StopTimeline stops={result.stops} />
                   </div>
                 </section>

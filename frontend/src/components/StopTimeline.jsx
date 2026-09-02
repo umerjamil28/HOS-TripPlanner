@@ -1,38 +1,58 @@
-import { STOP_META } from "../stopMeta.js";
+import { STOP_META, stopNote } from "../stopMeta.js";
 
-function formatTime(iso) {
+function formatStamp(iso) {
   if (!iso) return "";
-  const [, time] = iso.split("T");
-  return time;
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return iso.replace("T", " ");
+  return date.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
 }
 
-export default function StopTimeline({ stops }) {
+function formatMiles(miles) {
+  if (miles == null || miles === "") return "";
+  const value = Number(miles);
+  const label = Number.isInteger(value) ? String(value) : value.toFixed(1);
+  return `Mile ${label}`;
+}
+
+export default function StopTimeline({ stops, title = "Stops & rest" }) {
   if (!stops?.length) return null;
 
   return (
-    <ol className="stop-timeline">
-      {stops.map((stop, index) => {
-        const meta = STOP_META[stop.kind] || STOP_META.current;
-        return (
-          <li key={`${stop.kind}-${index}`} className={`stop-item kind-${stop.kind}`}>
-            <span
-              className="stop-icon"
-              style={{ background: meta.color, color: meta.ink || "#fff" }}
-              dangerouslySetInnerHTML={{
-                __html: meta.svg.replace("currentColor", meta.ink || "#fff"),
-              }}
-            />
-            <div>
-              <strong>{meta.label}</strong>
-              <p>
-                {stop.location}
-                {stop.duration_hours ? ` · ${stop.duration_hours} hr` : ""}
-              </p>
-            </div>
-            <time>{formatTime(stop.time)}</time>
-          </li>
-        );
-      })}
-    </ol>
+    <div className="journey-tracker">
+      {title ? <h3>{title}</h3> : null}
+      <ol className="stop-timeline">
+        {stops.map((stop, index) => {
+          const meta = STOP_META[stop.kind] || STOP_META.current;
+          const miles = formatMiles(stop.miles);
+          const note = stopNote(stop);
+
+          return (
+            <li key={`${stop.kind}-${index}`} className={`stop-item kind-${stop.kind}`}>
+              <span
+                className="stop-icon"
+                style={{ background: meta.color, color: meta.ink || "#fff" }}
+                dangerouslySetInnerHTML={{
+                  __html: meta.svg.replace("currentColor", meta.ink || "#fff"),
+                }}
+              />
+              <article className="stop-card">
+                <header className="stop-head">
+                  <strong>{meta.label}</strong>
+                  {miles ? <span className="stop-miles">{miles}</span> : null}
+                </header>
+                {stop.time ? <p className="stop-stamp">{formatStamp(stop.time)}</p> : null}
+                <p className="stop-place">{stop.location}</p>
+                {note ? <p className="stop-note">{note}</p> : null}
+              </article>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
   );
 }

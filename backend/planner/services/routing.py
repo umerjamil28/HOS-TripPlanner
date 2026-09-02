@@ -37,8 +37,8 @@ class Router:
         )
         response = requests.get(
             url,
-            params={"overview": "full", "geometries": "geojson"},
-            timeout=30,
+            params={"overview": "simplified", "geometries": "geojson"},
+            timeout=12,
         )
         response.raise_for_status()
         payload = response.json()

@@ -78,6 +78,9 @@ class HosEngineTests(SimpleTestCase):
         self.assertGreaterEqual(len(logs), 2)
         self.assertTrue(any(s.status == SLEEPER for s in result.segments))
         self.assertTrue(any(stop.kind == "fuel" for stop in result.stops))
+        for stop in result.stops:
+            if stop.kind == "fuel":
+                self.assertGreaterEqual(stop.miles, 1000.0)
         for sheet in logs:
             self.assertAlmostEqual(sum(sheet["totals"].values()), 24.0, delta=0.26)
 

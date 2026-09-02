@@ -51,6 +51,7 @@ class Stop:
     time: datetime
     duration_hours: float
     description: str
+    miles: float = 0.0
 
 
 @dataclass
@@ -258,6 +259,7 @@ class HosEngine:
                 time=self.now,
                 duration_hours=duration,
                 description=description,
+                miles=round(self.total_miles, 1),
             )
         )
 
@@ -319,9 +321,18 @@ class HosEngine:
         self._reset_shift()
 
     def _prepare_to_drive(self, lat: float, lng: float, fallback: str) -> None:
-        location = self._name(lat, lng, fallback)
         # Limits that block driving must be cleared before we move the truck.
         for _ in range(8):
+            needs_stop = (
+                self.cycle >= CYCLE_LIMIT_HOURS - 1e-6
+                or self.driving_shift >= MAX_DRIVING_HOURS - 1e-6
+                or self._window_remaining() < MIN_SEGMENT_HOURS
+                or self.driving_since_break >= BREAK_AFTER_DRIVE_HOURS - 1e-6
+                or self.miles_since_fuel >= FUEL_INTERVAL_MILES - 1e-6
+            )
+            if not needs_stop:
+                break
+            location = self._name(lat, lng, fallback)
             if self.cycle >= CYCLE_LIMIT_HOURS - 1e-6:
                 self._restart(lat, lng, location)
                 continue
@@ -364,40 +375,53 @@ class HosEngine:
             drive_left = MAX_DRIVING_HOURS - self.driving_shift
             break_left = BREAK_AFTER_DRIVE_HOURS - self.driving_since_break
             cycle_left = CYCLE_LIMIT_HOURS - self.cycle
-            fuel_left_miles = FUEL_INTERVAL_MILES - self.miles_since_fuel
+            fuel_left_miles = max(0.0, FUEL_INTERVAL_MILES - self.miles_since_fuel)
             fuel_left_hours = fuel_left_miles / speed if speed > 0 else window
             leg_hours = remaining_miles / speed
+            hos_left = min(window, drive_left, break_left, cycle_left)
 
-            h = min(window, drive_left, break_left, cycle_left, fuel_left_hours, leg_hours)
-            h = round_to_quarter(h)
+            # Fuel at 1,000 miles, not a rounded-down 998.x from 15-minute slices.
+            can_reach_fuel = (
+                fuel_left_miles > 0.05
+                and fuel_left_miles <= remaining_miles + 0.05
+                and fuel_left_hours <= hos_left + 1e-6
+            )
 
-            if h < MIN_SEGMENT_HOURS:
-                if remaining_miles / speed <= MIN_SEGMENT_HOURS + 1e-6 and min(window, drive_left, cycle_left) >= MIN_SEGMENT_HOURS:
-                    h = MIN_SEGMENT_HOURS
-                else:
-                    # A limit is sitting at zero; prepare_to_drive should have cleared it.
-                    # Force the matching rest so we cannot spin.
-                    loc_name = self._name(here[0], here[1], leg.dest.city_state)
-                    if cycle_left < MIN_SEGMENT_HOURS:
-                        self._restart(here[0], here[1], loc_name)
-                    elif drive_left < MIN_SEGMENT_HOURS or window < MIN_SEGMENT_HOURS:
-                        self._daily_rest(here[0], here[1], loc_name)
-                    elif break_left < MIN_SEGMENT_HOURS:
-                        self._break(here[0], here[1], loc_name)
-                    elif fuel_left_hours < MIN_SEGMENT_HOURS:
-                        self._fuel(here[0], here[1], loc_name)
+            miles = 0.0
+            if can_reach_fuel:
+                miles = min(remaining_miles, fuel_left_miles)
+                h = miles / speed if speed else MIN_SEGMENT_HOURS
+                h = MIN_SEGMENT_HOURS if h < MIN_SEGMENT_HOURS else round_to_quarter(h)
+            else:
+                h = min(hos_left, fuel_left_hours, leg_hours)
+                h = round_to_quarter(h)
+
+                if h < MIN_SEGMENT_HOURS:
+                    if remaining_miles / speed <= MIN_SEGMENT_HOURS + 1e-6 and min(window, drive_left, cycle_left) >= MIN_SEGMENT_HOURS:
+                        h = MIN_SEGMENT_HOURS
                     else:
-                        break
-                    continue
+                        loc_name = self._name(here[0], here[1], leg.dest.city_state)
+                        if cycle_left < MIN_SEGMENT_HOURS:
+                            self._restart(here[0], here[1], loc_name)
+                        elif drive_left < MIN_SEGMENT_HOURS or window < MIN_SEGMENT_HOURS:
+                            self._daily_rest(here[0], here[1], loc_name)
+                        elif break_left < MIN_SEGMENT_HOURS:
+                            self._break(here[0], here[1], loc_name)
+                        else:
+                            break
+                        continue
 
-            miles = min(remaining_miles, h * speed)
-            if miles <= 0:
+                miles = min(remaining_miles, h * speed)
+                if miles <= 0:
+                    break
+                h = miles / speed
+                h = max(MIN_SEGMENT_HOURS, round_to_quarter(h)) if remaining_miles - miles <= 0.05 else round_to_quarter(h)
+                if h <= 0:
+                    break
+                miles = min(remaining_miles, h * speed)
+
+            if miles <= 0 or h <= 0:
                 break
-            h = miles / speed
-            h = max(MIN_SEGMENT_HOURS, round_to_quarter(h)) if remaining_miles - miles <= 0.05 else round_to_quarter(h)
-            if h <= 0:
-                break
-            miles = min(remaining_miles, h * speed)
 
             traveled_on_leg += miles
             remaining_miles = max(0.0, remaining_miles - miles)
@@ -406,7 +430,7 @@ class HosEngine:
             dest_name = (
                 leg.dest.city_state
                 if remaining_miles <= 0.05
-                else self._name(dest_pt[0], dest_pt[1], leg.dest.city_state)
+                else "En route"
             )
             self._add(
                 DRIVING,

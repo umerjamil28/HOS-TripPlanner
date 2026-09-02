@@ -9,6 +9,9 @@ SECRET_KEY = os.environ.get(
 )
 
 DEBUG = os.environ.get("DJANGO_DEBUG", "true").lower() == "true"
+ON_VERCEL = bool(os.environ.get("VERCEL"))
+if ON_VERCEL:
+    DEBUG = os.environ.get("DJANGO_DEBUG", "false").lower() == "true"
 
 ALLOWED_HOSTS = [
     host.strip()
@@ -59,10 +62,11 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 # No app data is stored. SQLite is only here because Django expects a default DB.
+# Vercel's filesystem is read-only except /tmp.
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "NAME": "/tmp/db.sqlite3" if ON_VERCEL else BASE_DIR / "db.sqlite3",
     }
 }
 

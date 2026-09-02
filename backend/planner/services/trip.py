@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
 from planner.constants import CYCLE_LIMIT_HOURS, DEFAULT_START_HOUR, SAME_PLACE_MILES
@@ -27,6 +28,16 @@ def _place_dump(place: Place) -> dict:
     }
 
 
+def _thin_geometry(coords: list[list[float]], max_points: int = 400) -> list[list[float]]:
+    if len(coords) <= max_points:
+        return coords
+    step = max(1, (len(coords) - 1) // (max_points - 1))
+    thinned = coords[::step]
+    if thinned[-1] != coords[-1]:
+        thinned.append(coords[-1])
+    return thinned
+
+
 def plan_trip(
     current_location: str,
     pickup_location: str,
@@ -40,16 +51,24 @@ def plan_trip(
     router = router or Router()
     start = _start_time(start_time)
 
-    current = geocoder.geocode(current_location)
-    pickup = geocoder.geocode(pickup_location)
-    dropoff = geocoder.geocode(dropoff_location)
+    with ThreadPoolExecutor(max_workers=3) as pool:
+        current_f = pool.submit(geocoder.geocode, current_location)
+        pickup_f = pool.submit(geocoder.geocode, pickup_location)
+        dropoff_f = pool.submit(geocoder.geocode, dropoff_location)
+        current = current_f.result()
+        pickup = pickup_f.result()
+        dropoff = dropoff_f.result()
 
-    to_pickup = None
-    if haversine_miles(current.lat, current.lng, pickup.lat, pickup.lng) > SAME_PLACE_MILES:
-        to_pickup = router.route(current, pickup)
-    to_dropoff = router.route(pickup, dropoff)
+    need_deadhead = (
+        haversine_miles(current.lat, current.lng, pickup.lat, pickup.lng) > SAME_PLACE_MILES
+    )
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        dropoff_f = pool.submit(router.route, pickup, dropoff)
+        pickup_f = pool.submit(router.route, current, pickup) if need_deadhead else None
+        to_dropoff = dropoff_f.result()
+        to_pickup = pickup_f.result() if pickup_f else None
 
-    engine = HosEngine(start, current_cycle_used, resolve_name=geocoder.reverse)
+    engine = HosEngine(start, current_cycle_used)
     result = engine.run(current, pickup, dropoff, to_pickup, to_dropoff)
     logs = build_daily_logs(result)
 
@@ -62,6 +81,7 @@ def plan_trip(
             "time": stop.time.isoformat(timespec="minutes"),
             "duration_hours": stop.duration_hours,
             "description": stop.description,
+            "miles": stop.miles,
         }
         for stop in result.stops
     ]
@@ -82,7 +102,7 @@ def plan_trip(
         "route": {
             "distance_miles": round(result.route_distance_miles, 1),
             "duration_hours": round(result.route_duration_hours, 2),
-            "geometry": [[lat, lng] for lat, lng in result.geometry],
+            "geometry": _thin_geometry([[lat, lng] for lat, lng in result.geometry]),
             "source": (
                 to_dropoff.source
                 if to_pickup is None
